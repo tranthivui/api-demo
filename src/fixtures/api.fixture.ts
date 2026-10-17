@@ -1,6 +1,7 @@
 import {APIRequestContext, test as base, expect, request as playwrightRequest} from "@playwright/test";
 import { BASE_URL } from "../paths/paths";
 import { user } from "../data/users";
+import { LoginResponse } from "../data/loginResponse";
 type ApiFixture = {authAPI: APIRequestContext};
 export const test=base.extend<ApiFixture>({
     authAPI: async({},use)=>{
@@ -9,16 +10,15 @@ export const test=base.extend<ApiFixture>({
             data: {username: user.username, password: user.password},
         });
         await expect(loginRes).toBeOK();
-        const state=await loginContext.storageState();
+        const loginResData: LoginResponse= await loginRes.json();
+        expect(loginResData.username).toBe(user.username);
+        const token=loginResData.accessToken;
+        if(!token) throw new Error(" Login response not have asccessToke");
         await loginContext.dispose();
-
-        const accessToken=state.cookies.find(c => c.name==="accessToken");
-        if(!accessToken) throw new Error("Not found accessToken after login");
-         const api=await playwrightRequest.newContext({
+        const api=await playwrightRequest.newContext({
             baseURL: BASE_URL,
-            storageState: state,
-            extraHTTPHeaders: {"accessToken": accessToken.value},
-         });
+            extraHTTPHeaders: {Authorization: `Bearer ${token}`},
+        });
          await use(api);
          await api.dispose();
     }
