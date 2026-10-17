@@ -1,7 +1,7 @@
 import {APIRequestContext, test as base, expect, request as playwrightRequest} from "@playwright/test";
 import { BASE_URL } from "../paths/paths";
 import { user } from "../data/users";
-import { LoginResponse } from "../data/loginResponse";
+import { LoginResponse } from "../types/loginResponse";
 type ApiFixture = {authAPI: APIRequestContext};
 export const test=base.extend<ApiFixture>({
     authAPI: async({},use)=>{
